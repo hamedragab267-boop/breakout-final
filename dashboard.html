@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Jost', sans-serif; background: #f5f5f5; margin:0; }
+header { background: #FF6600; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.3em; font-weight: bold; }
+main { padding: 20px; }
+h2 { color: #FF6600; margin-top: 25px; }
+table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+table, th, td { border: 1px solid #ccc; }
+th, td { padding: 10px; text-align: left; }
+th { background: #FFB266; }
+button { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; background: #FF6600; color: white; transition: background 0.3s; }
+button:hover { background: #cc5200; }
+.update-btn { background: #3399ff; }
+.update-btn:hover { background: #287acc; }
+.delete-btn { background: #cc0000; }
+.delete-btn:hover { background: #990000; }
+.clear-btn { background: #cc6600; margin-bottom:10px; }
+.clear-btn:hover { background: #994d00; }
+</style>
+</head>
+<body>
+
+<header>
+  Breakout Admin Dashboard
+ 
+</header>
+
+<main>
+  <h2>Orders</h2>
+  <button id="clear-orders" class="clear-btn">Delete All Orders</button>
+  <table id="orders-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Items</th>
+        <th>Total Price</th>
+        <th>Points</th>
+        <th>Notes</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Users</h2>
+  <table id="users-table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Wallet</th>
+        <th>Points</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
+
+<script type="module">
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, collection, doc, updateDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { app } from "./firebase.js";
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+const adminEmail = "breakout2163@gmail.com";
+
+// حماية Dashboard
+onAuthStateChanged(auth, user => {
+  if(!user || user.email !== adminEmail){
+    alert("Access Denied!");
+    signOut(auth).then(() => { window.location.href = "dashboard-login.html"; });
+  }
+});
+
+// --- جلب الطلبات ---
+const ordersTable = document.getElementById("orders-table").querySelector("tbody");
+onSnapshot(collection(db, "orders"), snapshot => {
+  ordersTable.innerHTML = "";
+  snapshot.forEach(docSnap => {
+    const order = docSnap.data();
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${order.username || "N/A"}</td>
+      <td>${order.items?.map(i => i.name + " (" + i.flavor + " x"+i.qty+")").join(", ") || "N/A"}</td>
+      <td>${order.totalPrice || 0} EGY</td>
+      <td>${order.totalPoints || 0}</td>
+      <td>${order.items?.map(i => i.notes).join(", ") || "N/A"}</td>
+      <td><button class="delete-btn">Delete</button></td>
+    `;
+    tr.querySelector(".delete-btn").addEventListener("click", async () => {
+      if(confirm("Delete this order?")) await deleteDoc(doc(db, "orders", docSnap.id));
+    });
+    ordersTable.appendChild(tr);
+  });
+});
+
+// حذف كل الطلبات
+document.getElementById("clear-orders").addEventListener("click", async () => {
+  if(confirm("Delete all orders?")){
+    const snapshot = await getDocs(collection(db, "orders"));
+    snapshot.forEach(async docSnap => await deleteDoc(doc(db, "orders", docSnap.id)));
+  }
+});
+
+// --- جلب المستخدمين ---
+const usersTable = document.getElementById("users-table").querySelector("tbody");
+onSnapshot(collection(db, "users"), snapshot => {
+  usersTable.innerHTML = "";
+  snapshot.forEach(docSnap => {
+    const user = docSnap.data();
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${user.username || "N/A"}</td>
+      <td>${user.email || "N/A"}</td>
+      <td>${user.phone || "N/A"}</td>
+      <td>${user.wallet || 0} EGY</td>
+      <td>${user.points || 0}</td>
+      <td>
+        <button class="update-btn">Add Wallet</button>
+        <button class="delete-btn">Delete User</button>
+      </td>
+    `;
+    tr.querySelector(".update-btn").addEventListener("click", async () => {
+      let amount = parseInt(prompt("Enter amount:"));
+      if(isNaN(amount) || amount <= 0) return alert("Invalid amount");
+      await updateDoc(doc(db, "users", docSnap.id), { wallet: (user.wallet || 0) + amount });
+      alert("✅ Wallet updated");
+    });
+    tr.querySelector(".delete-btn").addEventListener("click", async () => {
+      if(confirm("Delete this user?")) await deleteDoc(doc(db, "users", docSnap.id));
+    });
+    usersTable.appendChild(tr);
+  });
+});
+
+// Logout
+
+</script>
+
+</body>
+</html>

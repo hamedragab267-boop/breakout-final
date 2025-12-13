@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Breakout - Home</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+   
+</head>
+<body>
+
+<!-- كارت المستخدم الصغير -->
+<div id="user-card">
+    <h5 id="user-name">User: </h5>
+    <p id="user-points">Points: 0</p>
+    <p id="user-balance">Wallet: 0 EGY</p>
+    <!-- زرار الشحن -->
+    <button id="recharge-btn" onclick="window.location.href='wallet.html'">Recharge Wallet</button>
+</div>
+
+<section class="nav text-center my-4">
+    <h3 class="span loader">
+        <span class="m">B</span>
+        <span class="m">R</span>
+        <span class="m">E</span>
+        <span class="m">A</span>
+        <span class="m">K</span>
+        <span class="m">O</span>
+        <span class="m">U</span>
+        <span class="m">T</span>
+    </h3>
+</section>
+
+<div class="container my-5">
+    <div class="row text-center">
+        <!-- Hot Drinks Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <img class="card-img-top" src="img/44.jpg" alt="Hot Drinks">
+                <div class="card-body">
+                    <h5 class="card-title">Hot Drinks</h5>
+                    <a href="hot/index.html" class="btn btn-success">Go to Hot Drinks</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cold Drinks Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <img class="card-img-top" src="img/peakpx.jpg" alt="Cold Drinks">
+                <div class="card-body">
+                    <h5 class="card-title">Cold Drinks</h5>
+                    <a href="cold/index.html" class="btn btn-success">Go to Cold Drinks</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase JS -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+<!-- Home JS -->
+ <script type="module" src="firebase.js"></script>
+<script type="module" src="home.js"></script>
+
+</body>
+</html>

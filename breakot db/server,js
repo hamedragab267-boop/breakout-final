@@ -1,0 +1,79 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const bcrypt = require('bcrypt');
+const db = require('./database');
+
+const app = express();
+const PORT = 3000;
+const saltRounds = 10;
+
+app.use(cors());
+app.use(bodyParser.json());
+
+// ===== تسجيل مستخدم جديد =====
+app.post('/api/register', (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) return res.json({ success: false, message: "Missing fields" });
+
+  bcrypt.hash(password, saltRounds, (err, hash) => {
+    if (err) return res.json({ success: false, message: "Error hashing password" });
+    db.run(INSERT INTO users (name,email,password) VALUES (?,?,?), [name,email,hash], function(err){
+      if(err) return res.json({ success:false, message:"Email already exists" });
+      res.json({ success:true, userId:this.lastID });
+    });
+  });
+});
+
+// ===== تسجيل دخول =====
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  if(!email || !password) return res.json({ success:false, message:"Missing fields" });
+
+  db.get(SELECT * FROM users WHERE email = ?, [email], (err, user) => {
+    if(err || !user) return res.json({ success:false, message:"Invalid email or password" });
+
+    bcrypt.compare(password, user.password, (err, result) => {
+      if(result) res.json({ success:true, user });
+      else res.json({ success:false, message:"Invalid email or password" });
+    });
+  });
+});
+
+// ===== شحن المحفظة =====
+app.post('/api/wallet/recharge', (req,res) => {
+  const { userId, amount } = req.body;
+  if(!userId || !amount || amount <= 0) return res.json({ success:false, message:"Invalid data" });
+
+  db.get(SELECT wallet FROM users WHERE id=?, [userId], (err,row) => {
+    if(err || !row) return res.json({ success:false, message:"User not found" });
+    const newWallet = row.wallet + amount;
+    db.run(UPDATE users SET wallet=? WHERE id=?, [newWallet,userId], (err)=>{
+      if(err) return res.json({ success:false, message:"Failed to recharge wallet" });
+      res.json({ success:true, wallet:newWallet });
+    });
+  });
+});
+
+// ===== إضافة طلب =====
+app.post('/api/order', (req,res)=>{
+  const { userId, items, totalPrice, totalPoints } = req.body;
+  if(!userId || !items || items.length===0) return res.json({ success:false, message:"No items" });
+
+  db.run(INSERT INTO orders (user_id,total_price,total_points) VALUES (?,?,?), [userId,totalPrice,totalPoints], function(err){
+    if(err) return res.json({ success:false, message:"Failed to create order" });
+    const orderId = this.lastID;
+
+    const stmt = db.prepare(INSERT INTO order_items (order_id, drink_id, flavor, quantity, notes, price, points) VALUES (?,?,?,?,?,?,?));
+    items.forEach(item=>{
+      stmt.run([orderId,item.drinkId,item.flavor,item.quantity,item.notes,item.price,item.points]);
+    });
+    stmt.finalize();
+
+    res.json({ success:true, orderId });
+  });
+});
+
+app.listen(PORT, () => {
+  console.log('Server running on http://localhost:${PORT}');
+});

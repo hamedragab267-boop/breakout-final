@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>cold Drinks Cart</title>
+<style>
+   #user-display {
+    font-size: 1.2em; 
+    margin-bottom: 20px; 
+    padding: 20px; 
+    background: #eee; 
+    border-radius: 5px; 
+    display: inline-block;
+    text-align: left;
+  }
+  #user-display p { margin: 5px 0; }
+  #recharge-btn {
+    padding: 10px 20px; 
+    font-size: 1em; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    background: #006600; 
+    color: white; 
+    display: block;
+    margin: 0 auto;
+  }
+  #recharge-btn:hover { background: #228B22; }
+
+     h3.span {
+  font-size: 3vw;
+  letter-spacing: 0.5em;
+  font-family: "ROBOTO", serif;
+  font-weight: 100;
+  color: #100;
+  z-index: 5;
+}
+    .loader span {
+  color: #ffffff;
+  text-shadow: 0 0 0 #006400
+;
+  -webkit-animation: loading 2s ease-in-out infinite alternate;
+}
+
+@-webkit-keyframes loading {
+  to {
+    text-shadow: 20px 0 70px #ff0266;
+    color: #006400;
+  }
+}
+.loader span:nth-child(2) {
+  -webkit-animation-delay: 0.1s;
+}
+.loader span:nth-child(3) {
+  -webkit-animation-delay: 0.2s;
+}
+.loader span:nth-child(4) {
+  -webkit-animation-delay: 0.3s;
+}
+.loader span:nth-child(5) {
+  -webkit-animation-delay: 0.4s;
+}
+.loader span:nth-child(6) {
+  -webkit-animation-delay: 0.5s;
+}
+.loader span:nth-child(7) {
+  -webkit-animation-delay: 0.6s;
+}
+.loader span:nth-child(8) {
+  -webkit-animation-delay: 0.7s;
+}
+.loader span:nth-child(9) {
+  -webkit-animation-delay: 0.8s;
+}
+
+.loader span:nth-child(10) {
+  -webkit-animation-delay: 0.9s;
+}
+.loader span:nth-child(11) {
+  -webkit-animation-delay: 1s;
+}
+.loader span:nth-child(12) {
+  -webkit-animation-delay: 1.1s;
+}
+.loader span:nth-child(13) {
+  -webkit-animation-delay: 1.2s;
+}
+.loader span:nth-child(14) {
+  -webkit-animation-delay: 1.3s;
+}
+.loader span:nth-child(15) {
+  -webkit-animation-delay: 1.4s;
+}
+.loader span:nth-child(16) {
+  -webkit-animation-delay: 1.5s;
+}
+.loader span:nth-child(17) {
+  -webkit-animation-delay: 1.6s;
+}
+.loader span:nth-child(18) {
+  -webkit-animation-delay: 1.7s;
+}
+.loader span:nth-child(19) {
+  -webkit-animation-delay: 1.8s;
+}
+.loader span:nth-child(20) {
+  -webkit-animation-delay: 1.9s;
+}
+.loader span:nth-child(21) {
+  -webkit-animation-delay: 2s;
+}
+.loader span:nth-child(22) {
+  -webkit-animation-delay: 2.1s;
+}
+/* الكارت الخارجي الثابت على اليمين */
+/* كارت المستخدم */
+
+/* الحاوية المثبتة */
+/* الحاوية المثبتة للكارتين */
+/* كارت المستخدم */
+#user-card {
+    position: fixed;
+    top: 20px;        /* مسافة من أعلى الصفحة */
+    right: 20px;      /* على اليمين */
+    width: 170px;
+    height: 100px;    /* ارتفاع ثابت */
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    text-align: center;
+    overflow: hidden;
+}
+
+/* كارت الأوردر */
+#sidebar-card {
+    position: fixed;
+    top: 20px;             /* نفس المسافة من أعلى الصفحة */
+    right: 240px;          /* يبعد عن كارت المستخدم بمقدار 20px + عرض الكارت */
+    width: 220px;
+    height: 100px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    text-align: center;
+    overflow: auto;        /* يسمح بالتمرير إذا زاد المحتوى */
+}
+
+
+
+
+#checkout-btn {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    background-color: #28a745;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#checkout-btn:hover {
+    background-color: #218838;
+}
+
+
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5;}
+  .cards-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .card {
+    width: 180px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;
+    background: rgb(255, 255, 255); box-shadow: 2px 4px 8px #ffffff20;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  
+  .card img { width: 100%; height: 120px; object-fit: cover; border-radius: 5px; margin-bottom: 5px; }
+  .card h5 { font-size: 1em; margin: 5px 0; text-align: center; }
+  .card label { font-size: 0.9em; }
+  .card input[type="number"], .card select { width: 100%; margin-bottom: 5px; padding: 3px; }
+  .btn-order {
+    background: #006600; color: rgb(255, 255, 255); padding: 5px; border: none; border-radius: 3px; cursor: pointer; width: 100%;
+    font-size: 0.9em; font-weight: bold;
+  }
+  
+  .btn-order:hover { background: #228B22; }
+  #cart-items { margin-top: 20px; padding-left: 0; list-style: none; }
+  #cart-items li { background: #eee; padding: 5px; margin-bottom: 5px; border-radius: 3px; }
+  #complete-order {
+    background: #FF6600; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;
+    margin-top: 10px;
+  }
+  #complete-order:hover { background: #FF8533; }
+</style>
+</head>
+<body>
+<!-- حاوية الكارتات -->
+
+    <div id="user-card">
+        <h5 id="user-name">User: </h5>
+        <p id="user-points">Points: 0</p>
+        <p id="user-balance">Wallet: 0 EGY</p>
+    </div>
+
+<a href="cart.html" 
+   style="
+      position: fixed;
+      top: 20px;
+      right: 200px;
+      width: 60px;
+      height: 60px;
+      background: #FF6600;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.2em;
+      text-decoration: none;
+      z-index: 999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+   ">
+   🛒
+   <span id="cart-count" style="
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: red;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+   ">0</span>
+</a>
+
+<section 
+  class="nav text-center my-4">
+  <h3 class="span loader">
+    <span class="m">B</span>
+    <span class="m">R</span>
+    <span class="m">E</span>
+    <span class="m">A</span>
+    <span class="m">K</span>
+    <span class="m">O</span>
+    <span class="m">U</span>
+    <span class="m">T</span>
+  </h3>
+</section>
+
+
+<h2 class="text-center">cold Drinks</h2>
+
+<div class="cards-container">
+  <!-- كارت 1 -->
+  <div class="card">
+    <img src="img/ميلك شيك.jpg" alt="Drink 1">
+    <h5>Milkshakes</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+    <label>Flavor:</label>
+<select class="flavor">
+  <option value="فانيليا" data-price="40"data-points="30">فانيليا</option>
+  <option value="كارميل" data-price="40"data-points="30">كارميل</option>
+  <option value="شوكلاته" data-price="40"data-points="30">شوكلاتهه</option>
+  <option value="اوريو" data-price="50"data-points="50">اوريو</option>
+<option value="توينكز" data-price="50"data-points="50">توينكز</option>
+ <option value="هوهوز" data-price="50"data-points="50">هوهوز</option>
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="any notes?">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+
+  <!-- كارت 2 -->
+  <div class="card">
+    <img src="img/GoodFoodFrappe-8757348.jpg" alt="Drink 2">
+    <h5>frappe</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+   <label>Flavor:</label>
+<select class="flavor">
+  <option value="كارميل" data-price="40"data-points="30">كارميل</option>
+  <option value="شوكلاته" data-price="40"data-points="30">شوكلاته</option>
+   <option value="سادة" data-price="40"data-points="30">سادة</option>
+    <option value="لاتيه كارميل" data-price="40"data-points="30">كارميل لاتيه</option>
+     <option value="موكا شوكلاته" data-price="40"data-points="30">موكاشوكلاته</option>
+      <option value="بندق" data-price="40"data-points="30">بندق</option>
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="برجاء كتابة السكر المطلوب">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/Caramel-Iced-Coffee-6.jpg" alt="Drink 2">
+    <h5>iced coffee</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+    <select class="flavor">
+  <option value="كارميل" data-price="40"data-points="30">كارميل</option>
+  <option value="شوكلاته" data-price="40"data-points="30">شوكلاته</option>
+   <option value="سادة" data-price="40"data-points="30">سادة</option>
+    <option value="لاتيه كارميل" data-price="40"data-points="30">كارميل لاتيه</option>
+     <option value="موكا شوكلاته" data-price="40"data-points="30">موكاشوكلاته</option>
+      <option value="بندق" data-price="40"data-points="30">بندق</option>
+      
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="برجاء كتابة السكر المطلوب">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/healthy-lemonade.jpg" alt="Drink 2">
+    <h5>lemonade</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+    <label>Flavor:</label>
+<select class="flavor">
+  <option value="سادة" data-price="20"data-points="15">سادة</option>
+  <option value="نعناع" data-price="20"data-points="15">نعناع</option>
+  <option value="بالحليب" data-price="25"data-points="20">بالحليب</option>
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="برجاءكتابةالسكر المطلوب">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/orange-juice-for-health.jpg" alt="Drink 2">
+    <h5>orange juice</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+   <label>Flavor:</label>
+<select class="flavor">
+  <option value="" data-price="35"data-points="20"></option>
+  <option value="smoothie" data-price="40"data-points="25">smoothie</option>
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="any notes?">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/mango.jpg" 
+    alt="mango">
+    <h5>mango juice</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+    <label>Flavor:</label>
+<select class="flavor">
+  <option value="" data-price="35"data-points="20"></option>
+  <option value="smoothie" data-price="40"data-points="25">smoothie </option>
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="any notes?">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/st.jpg" alt="Drink 2">
+    <h5>strawberry juice</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+   <label>Flavor:</label>
+<select class="flavor">
+  <option value="" data-price="25"data-points="15"></option>
+  <option value="smoothie" data-price="40"data-points="20">smoothie</option>
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="any notes?">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/banana.jpg" alt="Drink 2">
+    <h5>banana juice</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+   <label>Flavor:</label>
+<select class="flavor">
+  <option value="" data-price="25"data-points="15"></option>
+  
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="any notes?">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/توت.jpg" alt="Drink 2">
+    <h5> Berry juice</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+   <label>Flavor:</label>
+<select class="flavor">
+  
+  <option value=" " data-price="40"data-points="20"></option>
+
+</select>
+    <label>Notes:</label>
+<input type="text"class= "notes" placeholder="اي ملاحظات مثل: بالحليب او بدون">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/انانس.jpg" alt="Drink 2">
+    <h5>pineapple</h5>
+     <label>Quantity:</label>
+     <input type="number" class="qty" value="1" min="1">
+   label>Flavor:</label>
+<select class="flavor">
+  
+  <option value=" " data-price="40"data-points="20"></option>
+    </select>
+    <label>Notes:</label>
+<input type="text"class= "notes" placeholder="اي ملاحظات مثل: بالحليب او بدون">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/صن.jpg" alt="Drink 2">
+    <h5>sun shine</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+    <label>Flavor:</label>
+<select class="flavor">
+  <option value="رمان" data-price="30"data-points="15">رمان</option>
+  <option value="فراولة" data-price="30"data-points="15">فراولة</option>
+  <option value="توت" data-price="30"data-points="15">توت</option>
+  <option value="اناناس" data-price="30"data-points="15">اناناس</option>
+  <option value="كريز" data-price="30"data-points="15">كريز</option>
+   <option value="لمون نعناع" data-price="30"data-points="15">لمون نعناع</option>
+  
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="any notes?">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/شيري.jpg" alt="Drink 2">
+    <h5>  cherry cola </h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+   <label>Flavor:</label>
+<select class="flavor">
+  <option value="رمان" data-price="30"data-points="15">رمان</option>
+  <option value="فراولة" data-price="30"data-points="15">فراولة</option>
+  <option value="توت" data-price="30"data-points="15">توت</option>
+  <option value="اناناس" data-price="30"data-points="15">اناناس</option>
+  <option value="كريز" data-price="30"data-points="15">كريز</option>
+  
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="any notes?">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+  <!-- كارت 2 -->
+  <div class="card">
+    <img src="img/Photoroom-20241122_094451_5.png" alt="Drink 2">
+    <h5>Matcha</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+   <label>Flavor:</label>
+<select class="flavor">
+  <option value="iced" data-price="50"data-points="25">iced</option>
+  <option value="frappe" data-price="50"data-points="25">frappe</option>
+</select>
+<label>Notes:</label>
+<input type="text"class= "notes" placeholder="any notes?">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+<!-- كارت 2 -->
+  <div class="card">
+    <img src="img/سيفن.png" alt="Drink 2">
+    <h5>Soft Drink</h5>
+    <label>Quantity:</label>
+    <input type="number" class="qty" value="1" min="1">
+    <label>Flavor:</label>
+<select class="flavor">
+  
+  <option value="سيفن" data-price="15"data-points="5">سيفن</option>
+  <option value="بيبسي" data-price="15"data-points="5">بيبسي</option>
+</select>
+    <label>Notes:</label>
+<input type="text"class= "notes" placeholder="notes">
+    <button class="btn-order">Add to Cart</button>
+  </div>
+
+
+  <!-- كرر نفس div.card حتى تصل لـ 25 كارت مع تغيير الصور والاسم -->
+</div>
+
+
+<script type="module" src="firebase.js"></script>
+
+
+<script type="module" src="cart c.js"></script>
+</body>
+</html>

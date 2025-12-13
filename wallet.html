@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breakout Wallet</title>
+<style>
+body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #f2f2f2; font-family: Arial, sans-serif; }
+#wallet-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); text-align: center; width: 400px; }
+#wallet-card h2 { margin-bottom: 20px; color: #333; }
+#wallet-card input, #wallet-card select { padding: 10px; width: 90%; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+#wallet-card button { padding: 10px 20px; border: none; border-radius: 8px; background: #28a745; color: white; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
+#wallet-card button:hover { background: #218838; }
+.payment-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.copy-btn { margin-left: 10px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div id="wallet-card">
+  <h2>Breakout Wallet</h2>
+  <p id="user-name">User: ...</p>
+  <p id="user-balance">Wallet: 0 EGY</p>
+  <p id="user-points">Points: 0</p>
+
+  <select id="payment-method">
+    <option value="">اختر طريقة الدفع</option>
+    <option value="vodafone">Vodafone Cash</option>
+    <option value="instapay">InstaPay</option>
+  </select>
+
+  <div id="payment-info" class="payment-info"></div>
+
+  <input type="number" id="payment-amount" placeholder="Enter payment amount (min 100 EGY)" />
+  <input type="file" id="payment-proof" accept="image/*" />
+  <button id="send-proof-btn">Send Payment Proof</button>
+  
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyAubjKdiEqfDpW-tc94-l-AI7lbPs7IU04",
+  authDomain: "breakout-d5088.firebaseapp.com",
+  projectId: "breakout-d5088",
+  storageBucket: "breakout-d5088.appspot.com",
+  messagingSenderId: "57071720148",
+  appId: "1:57071720148:web:1a628bbb31191d11efcd41"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// عناصر الصفحة
+const userNameEl = document.getElementById("user-name");
+const userBalanceEl = document.getElementById("user-balance");
+const userPointsEl = document.getElementById("user-points");
+const paymentAmountInput = document.getElementById("payment-amount");
+const proofInput = document.getElementById("payment-proof");
+const paymentMethodSelect = document.getElementById("payment-method");
+const sendProofBtn = document.getElementById("send-proof-btn");
+const addTestBalanceBtn = document.getElementById("addTestBalanceBtn");
+const paymentInfoDiv = document.getElementById("payment-info");
+
+// بيانات الدفع
+const vodafoneNumber = "01031133529";
+const instaPayEmail = "01060505501";
+
+// تحديث بيانات المستخدم
+async function updateUserDisplay() {
+  const user = auth.currentUser;
+  if(!user) return;
+  const userRef = doc(db,"users",user.uid);
+  const userSnap = await getDoc(userRef);
+  if(userSnap.exists()){
+    const data = userSnap.data();
+    userNameEl.textContent = "User: " + data.username;
+    userBalanceEl.textContent = "Wallet: " + data.wallet + " EGY";
+    userPointsEl.textContent = "Points: " + data.points;
+  }
+}
+
+// التحقق من تسجيل الدخول
+auth.onAuthStateChanged(async (user) => {
+  if(user) await updateUserDisplay();
+  else { alert("❌ لازم تكون مسجل دخول أولاً!"); window.location.href="login.html"; }
+});
+
+// تحديث طريقة الدفع عند اختيار المستخدم
+paymentMethodSelect.addEventListener("change", () => {
+  const method = paymentMethodSelect.value;
+  paymentInfoDiv.innerHTML = "";
+  if(method === "vodafone"){
+    paymentInfoDiv.innerHTML = `<span id="vodafone-number">${vodafoneNumber}</span><button class="copy-btn" id="copy-vodafone">Copy</button>`;
+    document.getElementById("copy-vodafone").onclick = ()=> copyText(vodafoneNumber);
+  } else if(method === "instapay"){
+    paymentInfoDiv.innerHTML = `<span id="instapay-email">${instaPayEmail}</span><button class="copy-btn" id="copy-instapay">Copy</button>`;
+    document.getElementById("copy-instapay").onclick = ()=> copyText(instaPayEmail);
+  }
+});
+
+// دالة النسخ
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>alert("✅ تم النسخ!"));
+}
+
+// زر إضافة رصيد للتجربة
+
+
+// زر إرسال إثبات الدفع مباشرة للتليجرام مع caption
+sendProofBtn.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if(!user) return alert("❌ لا يوجد مستخدم حالي!");
+
+  const amount = parseInt(paymentAmountInput.value);
+  const file = proofInput.files[0];
+  const method = paymentMethodSelect.value;
+
+  if(!file) return alert("❌ اختر صورة الدفع أولاً!");
+  if(isNaN(amount) || amount < 50) return alert("❌ الحد الأدنى للشحن 50 EGY!");
+  if(!method) return alert("❌ اختر طريقة الدفع!");
+
+  // جلب بيانات المستخدم
+  const userSnap = await getDoc(doc(db,"users",user.uid));
+  const email = user.email || "Unknown"; // هنا نستخدم email من Firebase Auth مباشرة
+  const phone = userSnap.exists() ? userSnap.data().phone || "Unknown" : "Unknown";
+
+  const botToken = "8536551204:AAFpUIBNT7NiDOkC-ZurYhAxWEXcsZ6zzQg";
+  const chatId = "8319188377";
+
+  const formData = new FormData();
+  formData.append("chat_id", chatId);
+  formData.append("photo", file);
+  formData.append("caption",` 💰 New Payment Proof\nEmail: ${email}\nPhone: ${phone}\nAmount: ${amount} EGY\nMethod: ${method}`);
+
+  await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+    method: "POST",
+    body: formData
+  });
+
+  alert("✅ تم إرسال إثبات الدفع وسيتم التحقق قريبًا.");
+  paymentAmountInput.value = "";
+  proofInput.value = "";
+  paymentMethodSelect.value = "";
+  paymentInfoDiv.innerHTML = "";
+});
+
+
+ 
+</script>
+</body>
+</html>

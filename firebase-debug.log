@@ -1,0 +1,49 @@
+[debug] [2025-12-13T16:16:13.985Z] ----------------------------------------------------------------------
+[debug] [2025-12-13T16:16:13.986Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\LAPTOP\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2025-12-13T16:16:13.987Z] CLI Version:   15.0.0
+[debug] [2025-12-13T16:16:13.987Z] Platform:      win32
+[debug] [2025-12-13T16:16:13.987Z] Node Version:  v24.11.1
+[debug] [2025-12-13T16:16:13.987Z] Time:          Sat Dec 13 2025 18:16:13 GMT+0200 (Eastern European Standard Time)
+[debug] [2025-12-13T16:16:13.987Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-12-13T16:16:14.940Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-13T16:16:14.940Z] > authorizing via signed-in user (hamedragab267@gmail.com)
+[debug] [2025-12-13T16:16:14.940Z] [iam] checking project breakout-d5088 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-12-13T16:16:14.941Z] Checked if tokens are valid: true, expires at: 1765645645490
+[debug] [2025-12-13T16:16:14.941Z] Checked if tokens are valid: true, expires at: 1765645645490
+[debug] [2025-12-13T16:16:14.941Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/breakout-d5088:testIamPermissions [none]
+[debug] [2025-12-13T16:16:14.941Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/breakout-d5088:testIamPermissions x-goog-quota-user=projects/breakout-d5088
+[debug] [2025-12-13T16:16:14.941Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/breakout-d5088:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-12-13T16:16:15.878Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/breakout-d5088:testIamPermissions 200
+[debug] [2025-12-13T16:16:15.879Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/breakout-d5088:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-12-13T16:16:15.879Z] Checked if tokens are valid: true, expires at: 1765645645490
+[debug] [2025-12-13T16:16:15.879Z] Checked if tokens are valid: true, expires at: 1765645645490
+[debug] [2025-12-13T16:16:15.880Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/breakout-d5088 [none]
+[debug] [2025-12-13T16:16:16.405Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/breakout-d5088 200
+[debug] [2025-12-13T16:16:16.406Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/breakout-d5088 {"projectId":"breakout-d5088","projectNumber":"57071720148","displayName":"breakout","name":"projects/breakout-d5088","resources":{"hostingSite":"breakout-d5088"},"state":"ACTIVE","etag":"1_9118dc61-13d8-4934-b612-ee16d11844ec"}
+[info] 
+[info] === Deploying to 'breakout-d5088'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2025-12-13T16:16:16.417Z] Checked if tokens are valid: true, expires at: 1765645645490
+[debug] [2025-12-13T16:16:16.417Z] Checked if tokens are valid: true, expires at: 1765645645490
+[debug] [2025-12-13T16:16:16.417Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/breakout-d5088/versions [none]
+[debug] [2025-12-13T16:16:16.417Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/breakout-d5088/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2025-12-13T16:16:17.814Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/breakout-d5088/versions 200
+[debug] [2025-12-13T16:16:17.814Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/breakout-d5088/versions {"name":"projects/57071720148/sites/breakout-d5088/versions/3630e86cad46ac12","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[breakout-d5088]: beginning deploy... 
+[info] i  hosting[breakout-d5088]: found 61268 files in . 
+[debug] [2025-12-13T16:16:22.492Z] [hosting] uploading with 200 concurrency
+[debug] [2025-12-13T16:16:22.493Z] [hosting] hash cache [] not populated
+[debug] [2025-12-13T16:16:22.506Z] Error: EBUSY: resource busy or locked, open 'C:\Users\LAPTOP\ntuser.dat.LOG2'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2025-12-13T16:16:22.506Z] Error: EBUSY: resource busy or locked, open 'C:\Users\LAPTOP\ntuser.dat.LOG1'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2025-12-13T16:16:22.507Z] Error: EBUSY: resource busy or locked, open 'C:\Users\LAPTOP\NTUSER.DAT'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2025-12-13T16:16:22.521Z] Error: EISDIR: illegal operation on a directory, read
+[error] 
+[error] Error: An unexpected error has occurred.
