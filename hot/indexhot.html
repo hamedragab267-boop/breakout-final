@@ -37,7 +37,6 @@ body{
   backdrop-filter:blur(12px);
   background:rgba(255,255,255,.12);
   border-radius:15px;
-  box-shadow:0 12px 40px rgba(0,0,0,.45);
   text-align:center;
   z-index:1000;
 }
@@ -144,9 +143,7 @@ body{
 
 <!-- Drinks Header -->
 <div class="drinks-header">
-  
   <h2>Hot Drinks</h2>
-  
 </div>
 
 <!-- Drinks Container -->
@@ -205,20 +202,20 @@ const drinks=[
     {name:"حليب",price:10,points:5}
   ]},
   {name:"Turkish Coffee",img:"img/turky coffe.jpg",flavors:[
-    {name:"مفردة سادة",price:25,points:10},
-    {name:"مفردة متبلة",price:25,points:10},
-    {name:"مزدوجة سادة",price:35,points:15},
-    {name:"مزدوجة متبلة",price:35,points:15}
+    {name:"سينجل سادة",price:25,points:10},
+    {name:"سينجل محوج",price:25,points:10},
+    {name:"دبل سادة",price:35,points:15},
+    {name:"دبل محوج",price:35,points:15}
   ]},
   {name:"French Coffee",img:"img/french coffe.jpg",flavors:[
-    {name:"مفردة سادة",price:30,points:10},
-    {name:"مفردة متبلة",price:30,points:10},
-    {name:"مزدوجة سادة",price:45,points:15},
-    {name:"مزدوجة متبلة",price:45,points:15}
+    {name:"سينجل سادة",price:30,points:10},
+    {name:"سبنجل محوج",price:30,points:10},
+    {name:"دبل سادة",price:45,points:15},
+    {name:"دبل محوج",price:45,points:15}
   ]},
   {name:"Hazelnut Coffee",img:"img/بندق.jpg",flavors:[
-    {name:"مفردة",price:30,points:10},
-    {name:"مزدوجة",price:45,points:15}
+    {name:"سينجل",price:30,points:10},
+    {name:"دبل",price:45,points:15}
   ]},
   {name:"Mint",img:"img/نعناع.png",flavors:[
     {name:"سادة",price:10,points:5}
@@ -231,8 +228,8 @@ const drinks=[
     {name:"سادة",price:10,points:5}
   ]},
   {name:"Espresso",img:"img/اسبرسو.jpg",flavors:[
-    {name:"مفردة",price:35,points:15},
-    {name:"مزدوجة",price:45,points:20}
+    {name:"سينجل",price:35,points:15},
+    {name:"دبل",price:45,points:20}
   ]},
   {name:"Nescafe Gold",img:"img/gold.jpg",flavors:[
     {name:"كابتشينو",price:30,points:20},
@@ -284,8 +281,8 @@ const drinks=[
 ];
 
 
-
 const container=document.getElementById("drinks-container");
+const requireSugar = ["Turkish Coffee","French Coffee","Hazelnut Coffee"];
 
 drinks.forEach(drink=>{
   const div=document.createElement("div");
@@ -329,7 +326,12 @@ drinks.forEach(drink=>{
     const price=opt.dataset.price*qty;
     const points=opt.dataset.points*qty;
     const flavor=opt.textContent;
-    const notes=div.querySelector(".notes").value;
+    const notes=div.querySelector(".notes").value.trim();
+
+    if(requireSugar.includes(drink.name) && notes===""){
+      showToast("⚠️ Please enter sugar before adding to cart!");
+      return;
+    }
 
     const user=auth.currentUser;
     const ref=db.collection("users").doc(user.uid);
