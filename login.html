@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Breakout - Auth</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+.auth-container{
+  background:rgba(0,0,0,.4);
+  padding:40px 30px;
+  border-radius:25px;
+  box-shadow:0 10px 30px rgba(0,255,204,.4);
+  width:90%;
+  max-width:500px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:15px;
+}
+#project-name{
+  font-family:'Segoe UI', sans-serif;
+  font-size:3rem;
+  color:#00ffcc;
+  text-align:center;
+  margin-bottom:20px;
+  text-shadow:
+     0 0 5px #00ffcc,
+     0 0 10px #00ffcc,
+     0 0 20px #00ffcc,
+     0 0 30px #00d4ff,
+     0 0 40px #00d4ff;
+  letter-spacing:5px;
+  animation: slidePulse 2s infinite alternate;
+}
+@keyframes slidePulse{
+  0%{ transform: translateY(0) scale(1); }
+  50%{ transform: translateY(-8px) scale(1.05); }
+  100%{ transform: translateY(0) scale(1); }
+}
+.auth-container h2{
+  color:#00ffcc;
+  margin-bottom:10px;
+  text-shadow:0 0 5px #00ffcc;
+}
+.auth-container input{
+  width:100%;
+  max-width:400px;
+  padding:12px 15px;
+  border-radius:15px;
+  border:none;
+  margin:5px 0;
+  font-size:1rem;
+  box-sizing:border-box;
+}
+.auth-container button{
+  width:100%;
+  max-width:400px;
+  padding:12px;
+  margin-top:15px;
+  border-radius:25px;
+  border:none;
+  background:linear-gradient(45deg,#00ffcc,#00d4ff);
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.3s;
+}
+.auth-container button:hover{
+  transform:scale(1.05);
+  box-shadow:0 10px 30px rgba(0,255,204,.5);
+}
+#toast{
+  position:fixed;
+  bottom:30px;
+  right:30px;
+  background:linear-gradient(45deg,#00ffcc,#00d4ff);
+  color:#000;
+  padding:14px 24px;
+  border-radius:30px;
+  opacity:0;
+  transition:.4s;
+  font-weight:bold;
+  box-shadow:0 10px 30px rgba(0,255,204,.5);
+}
+#toast.show{opacity:1;}
+.auth-toggle{
+  margin-top:10px;
+  color:#00ffcc;
+  cursor:pointer;
+  text-decoration:underline;
+}
+#forgot-password{
+  margin-top:10px;
+  color:#00ffcc;
+  cursor:pointer;
+  text-decoration:underline;
+}
+#forgot-password:hover{
+  color:#00d4ff;
+  transform:scale(1.05);
+}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="auth-container">
+  <h1 id="project-name">BREAKOUT</h1>
+  <h2 id="auth-title">Login</h2>
+  
+  <!-- Username & Phone only for Registration -->
+  <input type="text" id="username" placeholder="Username" style="display:none;">
+  <input type="text" id="phone" placeholder="Phone Number" style="display:none;">
+  
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="auth-btn">Login</button>
+  <p id="forgot-password">Forgot Password?</p>
+  <p class="auth-toggle" id="toggle-auth">Don't have an account? Register</p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+/* Firebase Config */
+const firebaseConfig = {
+  apiKey: "AIzaSyAubjKdiEqfDpW-tc94-l-AI7lbPs7IU04",
+  authDomain: "breakout-d5088.firebaseapp.com",
+  projectId: "breakout-d5088",
+  storageBucket: "breakout-d5088.appspot.com",
+  messagingSenderId: "57071720148",
+  appId: "1:57071720148:web:1a628bbb31191d11efcd41"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ===== Elements ===== */
+const authTitle = document.getElementById("auth-title");
+const authBtn = document.getElementById("auth-btn");
+const toggleAuth = document.getElementById("toggle-auth");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const usernameInput = document.getElementById("username");
+const phoneInput = document.getElementById("phone");
+const forgotPassword = document.getElementById("forgot-password");
+
+/* ===== State ===== */
+let isLogin = true;
+
+/* ===== Admin Email (اول تسجيل) ===== */
+const adminEmail = "breakout2163@gmail.com"; 
+const adminDashboardURL ="dashbord.html"; 
+
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+/* ===== Toggle Login/Register ===== */
+toggleAuth.addEventListener("click", ()=>{
+  isLogin = !isLogin;
+  if(isLogin){
+    authTitle.textContent="Login";
+    authBtn.textContent="Login";
+    toggleAuth.textContent="Don't have an account? Register";
+    usernameInput.style.display="none";
+    phoneInput.style.display="none";
+  }else{
+    authTitle.textContent="Register";
+    authBtn.textContent="Register";
+    toggleAuth.textContent="Already have an account? Login";
+    usernameInput.style.display="block";
+    phoneInput.style.display="block";
+  }
+});
+
+/* ===== Auth Action ===== */
+authBtn.addEventListener("click", async ()=>{
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+  const username = usernameInput.value.trim();
+  const phone = phoneInput.value.trim();
+
+  if(!email || !password){ showToast("Please fill all required fields"); return; }
+
+  if(isLogin){
+    try{
+      const userCred = await signInWithEmailAndPassword(auth,email,password);
+      showToast("Login Successful!");
+      
+      // اقرأ role من Firestore
+      const snap = await getDoc(doc(db,"users",userCred.user.uid));
+      if(snap.exists() && snap.data().role === "admin"){
+        setTimeout(()=>{ window.location.href = adminDashboardURL; }, 800);
+      } else {
+        setTimeout(()=>{ window.location.href = "home.html"; }, 800);
+      }
+
+    }catch(e){ showToast(e.message); }
+  }else{
+    if(!username || !phone){ showToast("Please fill username and phone"); return; }
+    try{
+      const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db,"users",user.uid),{
+        username: username,
+        phone: phone,
+        email: email,
+        wallet:0,
+        points:0,
+        cart:[],
+        role: email === adminEmail ? "admin" : "user" // ⚡ role
+      });
+
+      showToast("Registration Successful!");
+      setTimeout(()=>{
+        if(email === adminEmail){
+          window.location.href = adminDashboardURL;
+        } else {
+          window.location.href = "home.html";
+        }
+      },1000);
+
+    }catch(e){ showToast(e.message); }
+  }
+});
+
+/* ===== Forgot Password ===== */
+forgotPassword.addEventListener("click", async ()=>{
+  const email = emailInput.value.trim();
+  if(!email){ showToast("Please enter your email first"); return; }
+
+  try{
+    await sendPasswordResetEmail(auth,email);
+    showToast("Reset link sent to your email!");
+  }catch(e){ showToast(e.message); }
+});
+</script>
+
+</body>
+</html>

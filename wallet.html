@@ -4,45 +4,67 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Breakout Wallet</title>
+
 <style>
-body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #f2f2f2; font-family: Arial, sans-serif; }
-#wallet-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); text-align: center; width: 400px; }
-#wallet-card h2 { margin-bottom: 20px; color: #333; }
-#wallet-card input, #wallet-card select { padding: 10px; width: 90%; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
-#wallet-card button { padding: 10px 20px; border: none; border-radius: 8px; background: #28a745; color: white; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
-#wallet-card button:hover { background: #218838; }
-.payment-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.copy-btn { margin-left: 10px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  font-family:'Segoe UI',sans-serif;
+  color:#fff;
+}
+#wallet-card{
+  width:420px;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(15px);
+  padding:30px;
+  border-radius:20px;
+  box-shadow:0 15px 40px rgba(0,0,0,.4);
+  text-align:center;
+}
+#wallet-card h2{color:#00ffcc;margin-bottom:15px;text-shadow:0 0 10px #00ffcc;}
+.info{margin:8px 0;font-size:16px;}
+#payment-method{width:100%;padding:12px;border-radius:12px;border:2px solid #00ffcc;background:#0f2027;color:#fff;font-size:16px;margin-top:15px;cursor:pointer;}
+#payment-method option{background:#203a43;color:#fff;}
+#payment-method option[value=""]{color:#aaa;}
+#payment-info{margin:15px 0;display:flex;justify-content:center;align-items:center;gap:10px;}
+.copy-btn{padding:6px 12px;border:none;border-radius:8px;cursor:pointer;background:#00ffcc;font-weight:bold;}
+input[type="number"], input[type="file"]{width:100%;padding:12px;margin-top:10px;border-radius:12px;border:none;outline:none;font-size:15px;}
+button{width:100%;margin-top:15px;padding:12px;border:none;border-radius:20px;background:linear-gradient(45deg,#00ffcc,#00d4ff);font-size:16px;font-weight:bold;cursor:pointer;transition:.3s;}
+button:hover{transform:scale(1.05);}
+#toast{position:fixed;right:25px;bottom:25px;background:linear-gradient(45deg,#00ffcc,#00d4ff);color:#000;padding:14px 22px;border-radius:25px;opacity:0;transition:.4s;font-weight:bold;box-shadow:0 10px 30px rgba(0,255,204,.5);}
+#toast.show{opacity:1;}
 </style>
 </head>
 <body>
 
+<div id="toast"></div>
+
 <div id="wallet-card">
   <h2>Breakout Wallet</h2>
-  <p id="user-name">User: ...</p>
-  <p id="user-balance">Wallet: 0 EGY</p>
-  <p id="user-points">Points: 0</p>
-
+  <div class="info" id="user-name">User: ...</div>
+  <div class="info" id="user-balance">Wallet: 0 EGY</div>
+  <div class="info" id="user-points">Points: 0</div>
   <select id="payment-method">
     <option value="">اختر طريقة الدفع</option>
     <option value="vodafone">Vodafone Cash</option>
     <option value="instapay">InstaPay</option>
   </select>
-
-  <div id="payment-info" class="payment-info"></div>
-
-  <input type="number" id="payment-amount" placeholder="Enter payment amount (min 100 EGY)" />
-  <input type="file" id="payment-proof" accept="image/*" />
-  <button id="send-proof-btn">Send Payment Proof</button>
-  
+  <div id="payment-info"></div>
+  <input type="number" id="amount" placeholder="Amount (min 100 EGY)">
+  <input type="file" id="proof" accept="image/*">
+  <button id="send">Send Payment Proof</button>
+  <button id="logout">Logout</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyAubjKdiEqfDpW-tc94-l-AI7lbPs7IU04",
   authDomain: "breakout-d5088.firebaseapp.com",
@@ -56,102 +78,74 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// عناصر الصفحة
-const userNameEl = document.getElementById("user-name");
-const userBalanceEl = document.getElementById("user-balance");
-const userPointsEl = document.getElementById("user-points");
-const paymentAmountInput = document.getElementById("payment-amount");
-const proofInput = document.getElementById("payment-proof");
-const paymentMethodSelect = document.getElementById("payment-method");
-const sendProofBtn = document.getElementById("send-proof-btn");
-const addTestBalanceBtn = document.getElementById("addTestBalanceBtn");
-const paymentInfoDiv = document.getElementById("payment-info");
+const nameEl = document.getElementById("user-name");
+const balanceEl = document.getElementById("user-balance");
+const pointsEl = document.getElementById("user-points");
+const toast = document.getElementById("toast");
+const paymentMethod = document.getElementById("payment-method");
+const paymentInfo = document.getElementById("payment-info");
+const amountInput = document.getElementById("amount");
+const proofInput = document.getElementById("proof");
 
-// بيانات الدفع
-const vodafoneNumber = "01031133529";
-const instaPayEmail = "01060505501";
+function showToast(msg){ toast.textContent=msg; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"),2500); }
 
-// تحديث بيانات المستخدم
-async function updateUserDisplay() {
-  const user = auth.currentUser;
-  if(!user) return;
-  const userRef = doc(db,"users",user.uid);
-  const userSnap = await getDoc(userRef);
-  if(userSnap.exists()){
-    const data = userSnap.data();
-    userNameEl.textContent = "User: " + data.username;
-    userBalanceEl.textContent = "Wallet: " + data.wallet + " EGY";
-    userPointsEl.textContent = "Points: " + data.points;
-  }
-}
-
-// التحقق من تسجيل الدخول
-auth.onAuthStateChanged(async (user) => {
-  if(user) await updateUserDisplay();
-  else { alert("❌ لازم تكون مسجل دخول أولاً!"); window.location.href="login.html"; }
-});
-
-// تحديث طريقة الدفع عند اختيار المستخدم
-paymentMethodSelect.addEventListener("change", () => {
-  const method = paymentMethodSelect.value;
-  paymentInfoDiv.innerHTML = "";
-  if(method === "vodafone"){
-    paymentInfoDiv.innerHTML = `<span id="vodafone-number">${vodafoneNumber}</span><button class="copy-btn" id="copy-vodafone">Copy</button>`;
-    document.getElementById("copy-vodafone").onclick = ()=> copyText(vodafoneNumber);
-  } else if(method === "instapay"){
-    paymentInfoDiv.innerHTML = `<span id="instapay-email">${instaPayEmail}</span><button class="copy-btn" id="copy-instapay">Copy</button>`;
-    document.getElementById("copy-instapay").onclick = ()=> copyText(instaPayEmail);
+let currentUserEmail = "";
+onAuthStateChanged(auth, async user=>{
+  if(!user){ location.href="login.html"; return; }
+  currentUserEmail = user.email;
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(snap.exists()){
+    const d=snap.data();
+    nameEl.textContent="User: "+d.username;
+    balanceEl.textContent="Wallet: "+d.wallet+" EGY";
+    pointsEl.textContent="Points: "+d.points;
   }
 });
 
-// دالة النسخ
-function copyText(text){
-  navigator.clipboard.writeText(text).then(()=>alert("✅ تم النسخ!"));
-}
+paymentMethod.addEventListener("change",()=>{
+  paymentInfo.innerHTML="";
+  if(paymentMethod.value==="vodafone"){
+    paymentInfo.innerHTML=`<span>01031133529</span><button class="copy-btn">Copy</button>`;
+  }
+  if(paymentMethod.value==="instapay"){
+    paymentInfo.innerHTML=`<span>01060505501</span><button class="copy-btn">Copy</button>`;
+  }
+  const btn=paymentInfo.querySelector("button");
+  if(btn){ btn.onclick=()=>navigator.clipboard.writeText(paymentInfo.querySelector("span").textContent).then(()=>showToast("Copied ✅")); }
+});
 
-// زر إضافة رصيد للتجربة
-
-
-// زر إرسال إثبات الدفع مباشرة للتليجرام مع caption
-sendProofBtn.addEventListener("click", async () => {
-  const user = auth.currentUser;
-  if(!user) return alert("❌ لا يوجد مستخدم حالي!");
-
-  const amount = parseInt(paymentAmountInput.value);
+// إرسال الصورة مباشرة للتلجرام بدون تخزين
+document.getElementById("send").onclick=async ()=>{
+  const method = paymentMethod.value;
+  const amount = amountInput.value.trim();
   const file = proofInput.files[0];
-  const method = paymentMethodSelect.value;
 
-  if(!file) return alert("❌ اختر صورة الدفع أولاً!");
-  if(isNaN(amount) || amount < 50) return alert("❌ الحد الأدنى للشحن 50 EGY!");
-  if(!method) return alert("❌ اختر طريقة الدفع!");
+  if(!method){ showToast("اختر طريقة الدفع!"); return; }
+  if(!amount || parseInt(amount)<100){ showToast("أدخل مبلغ صحيح (≥100)"); return; }
+  if(!file){ showToast("اختر صورة الإثبات!"); return; }
 
-  // جلب بيانات المستخدم
-  const userSnap = await getDoc(doc(db,"users",user.uid));
-  const email = user.email || "Unknown"; // هنا نستخدم email من Firebase Auth مباشرة
-  const phone = userSnap.exists() ? userSnap.data().phone || "Unknown" : "Unknown";
+  showToast("Uploading... ⏳");
 
-  const botToken = "8536551204:AAFpUIBNT7NiDOkC-ZurYhAxWEXcsZ6zzQg";
-  const chatId = "8319188377";
+  try{
+    // تحويل الصورة إلى Blob
+    const formData = new FormData();
+    formData.append("chat_id", "8319188377");
+    formData.append("photo", file);
+    formData.append("caption", `💰 New Wallet Payment\nUser: ${currentUserEmail}\nAmount: ${amount} EGY\nMethod: ${method}`);
 
-  const formData = new FormData();
-  formData.append("chat_id", chatId);
-  formData.append("photo", file);
-  formData.append("caption",` 💰 New Payment Proof\nEmail: ${email}\nPhone: ${phone}\nAmount: ${amount} EGY\nMethod: ${method}`);
+    const botToken = "8536551204:AAFpUIBNT7NiDOkC-ZurYhAxWEXcsZ6zzQg";
+    const url = `https://api.telegram.org/bot${botToken}/sendPhoto`;
+    await fetch(url, { method:"POST", body: formData });
 
-  await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-    method: "POST",
-    body: formData
-  });
+    showToast("Payment proof sent ✔️");
+  }catch(e){
+    console.error(e);
+    showToast("Failed ❌");
+  }
+};
 
-  alert("✅ تم إرسال إثبات الدفع وسيتم التحقق قريبًا.");
-  paymentAmountInput.value = "";
-  proofInput.value = "";
-  paymentMethodSelect.value = "";
-  paymentInfoDiv.innerHTML = "";
-});
-
-
- 
+document.getElementById("logout").onclick=()=>{ signOut(auth).then(()=>{ showToast("Logged out"); setTimeout(()=>location.href="login.html",1000); }); };
 </script>
+
 </body>
 </html>

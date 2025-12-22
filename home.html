@@ -1,70 +1,382 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Breakout - Home</title>
-    <link rel="stylesheet" href="home.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-   
+<meta charset="UTF-8">
+<title>Breakout - Home</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:#fff;
+  overflow-x:hidden;
+}
+
+/* ===== TOAST ===== */
+#toast{
+  position:fixed;
+  bottom:30px;
+  right:30px;
+  background:linear-gradient(45deg,#00ffcc,#00d4ff);
+  color:#000;
+  padding:14px 24px;
+  border-radius:30px;
+  opacity:0;
+  transition:.4s;
+  font-weight:bold;
+  box-shadow:0 10px 30px rgba(0,255,204,.5);
+  z-index:2000;
+}
+#toast.show{opacity:1;}
+
+/* ===== USER CARD ===== */
+#user-card{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:240px;
+  padding:20px;
+  backdrop-filter:blur(15px);
+  background:rgba(255,255,255,.12);
+  border-radius:20px;
+  box-shadow:0 12px 40px rgba(0,0,0,.45);
+  transition:.3s;
+  z-index:1000;
+}
+#user-card:hover{
+  transform:translateY(-8px) rotateX(3deg) scale(1.02);
+  box-shadow:0 20px 50px rgba(0,255,204,.6);
+}
+
+/* Loading Skeleton */
+#loading{
+  height:4em;
+  background:linear-gradient(90deg,#333,#555,#333);
+  background-size:200% 100%;
+  border-radius:10px;
+  animation:loading 1.5s linear infinite;
+  margin-bottom:10px;
+}
+@keyframes loading{
+  0%{background-position:200% 0;}
+  100%{background-position:-200% 0;}
+}
+
+/* ===== LOGO ===== */
+.loader .m{
+  font-size:2.5rem;
+  animation:glow 2s ease-in-out infinite alternate, floaty 3s ease-in-out infinite;
+  display:inline-block;
+}
+@keyframes glow{
+  0%{color:#fff;text-shadow:none}
+  50%{color:#00ffcc;text-shadow:0 0 12px #00ffcc,0 0 25px #00ffcc;}
+  100%{color:#00ffcc;text-shadow:0 0 20px #00ffcc,0 0 40px #00ffcc;}
+}
+@keyframes floaty{
+  0%{transform:translateY(0);}
+  50%{transform:translateY(-6px);}
+  100%{transform:translateY(0);}
+}
+
+/* ===== CARDS ===== */
+.container-cards{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:25px;
+  margin:50px auto;
+  width:100%;
+  max-width:500px;
+}
+.card-clickable{
+  width:100%;
+  background:linear-gradient(145deg,#111,#222);
+  border:3px solid #00ffcc;
+  border-radius:25px;
+  overflow:hidden;
+  transition:.5s all;
+  cursor:pointer;
+  box-shadow:0 8px 25px rgba(0,255,204,.3);
+  text-align:center;
+}
+.card-clickable:hover{
+  transform:translateY(-10px) scale(1.03);
+  box-shadow:0 15px 40px rgba(0,255,204,.6);
+}
+.card-clickable .card-body{
+  transition:.4s all;
+  padding:15px;
+}
+.card-clickable .card-title{
+  font-weight:bold;
+  color:#00ffcc;
+  text-shadow:0 0 5px #00ffcc;
+  font-size:1.3rem;
+}
+
+/* ===== Sections ===== */
+.about-section,.rating-section,.feedback-section{
+  margin:30px auto;
+  padding:30px;
+  border-radius:25px;
+  max-width:900px;
+  transition:.3s;
+  background: linear-gradient(135deg,#203a43,#2c5364);
+}
+.about-section:hover,.rating-section:hover,.feedback-section:hover{
+  transform:translateY(-5px);
+  box-shadow:0 20px 40px rgba(0,255,204,.3);
+}
+.rating-section span{
+  font-size:2rem;
+  cursor:pointer;
+}
+.feedback-section button{
+  padding:10px 30px;
+  border-radius:25px;
+  background:linear-gradient(45deg,#00ffcc,#00d4ff);
+  border:none;
+  cursor:pointer;
+  transition:.3s;
+}
+.feedback-section button:hover{
+  transform:scale(1.05);
+  box-shadow:0 10px 30px rgba(0,255,204,.5);
+}
+
+/* ===== USER CARD BUTTONS ===== */
+#wallet-btn{
+  margin-top:10px;
+  font-weight:bold;
+  color:#00ffcc;
+  cursor:pointer;
+}
+</style>
 </head>
 <body>
 
-<!-- كارت المستخدم الصغير -->
+<div id="toast"></div>
+
+<!-- User Card -->
 <div id="user-card">
-    <h5 id="user-name">User: </h5>
-    <p id="user-points">Points: 0</p>
-    <p id="user-balance">Wallet: 0 EGY</p>
-    <!-- زرار الشحن -->
-    <button id="recharge-btn" onclick="window.location.href='wallet.html'">Recharge Wallet</button>
+  <div id="loading"></div>
+  <h5 id="user-name"></h5>
+  <p id="user-points"></p>
+  <p id="user-balance"></p>
+  <p id="wallet-btn">💳 شحن</p>
 </div>
 
-<section class="nav text-center my-4">
-    <h3 class="span loader">
-        <span class="m">B</span>
-        <span class="m">R</span>
-        <span class="m">E</span>
-        <span class="m">A</span>
-        <span class="m">K</span>
-        <span class="m">O</span>
-        <span class="m">U</span>
-        <span class="m">T</span>
-    </h3>
+<!-- Logo -->
+<section class="nav text-center my-5">
+  <h3 class="span loader" style="text-align:left; margin-left:50px;">
+    <span class="m">B</span><span class="m">R</span><span class="m">E</span><span class="m">A</span><span class="m">K</span><span class="m">O</span><span class="m">U</span><span class="m">T</span>
+  </h3>
 </section>
 
-<div class="container my-5">
-    <div class="row text-center">
-        <!-- Hot Drinks Card -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <img class="card-img-top" src="img/44.jpg" alt="Hot Drinks">
-                <div class="card-body">
-                    <h5 class="card-title">Hot Drinks</h5>
-                    <a href="hot/index.html" class="btn btn-success">Go to Hot Drinks</a>
-                </div>
-            </div>
-        </div>
+<!-- Cards -->
+<div class="container-cards">
+  <div class="card-clickable" onclick="goToHot()">
+    <img src="img/44.jpg" class="card-img-top" alt="Hot Drinks">
+    <div class="card-body"><h5 class="card-title">Hot Drinks</h5></div>
+  </div>
 
-        <!-- Cold Drinks Card -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <img class="card-img-top" src="img/peakpx.jpg" alt="Cold Drinks">
-                <div class="card-body">
-                    <h5 class="card-title">Cold Drinks</h5>
-                    <a href="cold/index.html" class="btn btn-success">Go to Cold Drinks</a>
-                </div>
-            </div>
-        </div>
-    </div>
+  <div class="card-clickable" onclick="goToCold()">
+    <img src="img/peakpx.jpg" class="card-img-top" alt="Cold Drinks">
+    <div class="card-body"><h5 class="card-title">Cold Drinks</h5></div>
+  </div>
 </div>
 
-<!-- Firebase JS -->
+<!-- About Section -->
+<section class="about-section text-center">
+  <h2 style="color:#00ffcc; margin-bottom:20px; text-shadow:0 0 5px #00ffcc;">About Breakout</h2>
+  <p style="font-size:1.2rem; line-height:1.6;">
+    Welcome to <strong>Breakout</strong>! We've been serving hot and cold drinks since <strong>2019</strong>. 
+    Our mission is to provide refreshing and quality drinks for all tastes. 
+    We believe in creating a cozy and enjoyable experience for everyone who visits us.
+  </p>
+</section>
+
+<!-- Rating Section -->
+<section class="rating-section text-center">
+  <h2 style="color:#00ffcc; margin-bottom:20px; text-shadow:0 0 5px #00ffcc;">Rate the Place</h2>
+  <div id="stars">
+    <span data-value="1">&#9734;</span>
+    <span data-value="2">&#9734;</span>
+    <span data-value="3">&#9734;</span>
+    <span data-value="4">&#9734;</span>
+    <span data-value="5">&#9734;</span>
+  </div>
+  <p id="rating-msg" style="margin-top:15px; color:#00ffcc;"></p>
+  <p id="average-rating" style="margin-top:10px; color:#00ffcc;"></p>
+</section>
+
+<!-- Feedback Section -->
+<section class="feedback-section text-center">
+  <h2 style="color:#00ffcc; margin-bottom:20px; text-shadow:0 0 5px #00ffcc;">Feedback / Complaints</h2>
+  <textarea id="feedback-input" rows="4" style="width:80%; border-radius:15px; padding:10px;" placeholder="Write your feedback or complaints here..."></textarea><br><br>
+  <button id="submit-feedback">Submit</button>
+</section>
+
+<!-- Firebase Compat -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-<!-- Home JS -->
- <script type="module" src="firebase.js"></script>
-<script type="module" src="home.js"></script>
+<script>
+// Firebase Initialization
+const firebaseConfig = {
+  apiKey: "AIzaSyAubjKdiEqfDpW-tc94-l-AI7lbPs7IU04",
+  authDomain: "breakout-d5088.firebaseapp.com",
+  projectId: "breakout-d5088",
+  storageBucket: "breakout-d5088.appspot.com",
+  messagingSenderId: "57071720148",
+  appId: "1:57071720148:web:1a628bbb31191d11efcd41"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* Toast Function */
+function showToast(msg, duration=2500){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),duration);
+}
+
+/* Redirect Functions */
+function goToWallet(){ window.location.href="wallet.html"; }
+function goToHot(){ window.location.href="hot/indexhot.html"; }
+function goToCold(){ window.location.href="cold/indexc.html"; }
+
+/* Load User Data */
+const nameEl = document.getElementById("user-name");
+const balanceEl = document.getElementById("user-balance");
+const pointsEl = document.getElementById("user-points");
+const loadingEl = document.getElementById("loading");
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    const ref = db.collection("users").doc(user.uid);
+    ref.get().then(docSnap=>{
+      if(docSnap.exists){
+        const d = docSnap.data();
+        nameEl.textContent = "User: "+d.username;
+        balanceEl.textContent = "Wallet: "+d.wallet+" EGY";
+        pointsEl.textContent = "Points: "+d.points;
+        loadingEl.style.display="none";
+        showToast("Welcome back 👋");
+      }else{
+        ref.set({username:user.email.split("@")[0],email:user.email,wallet:0,points:0}).then(()=>{
+          showToast("User initialized!");
+        });
+      }
+    });
+  } else {
+    alert("Please login first!");
+    window.location.href="login.html";
+  }
+});
+
+/* Wallet Button */
+document.getElementById("wallet-btn").addEventListener("click", ()=>{
+    window.location.href = "wallet.html";
+});
+
+/* Telegram Bot Function */
+async function sendToTelegram(msg){
+    const token = "8355463498:AAEjd0N96Zdu4ECiv3pLYcUN7dNESYR3jtI";
+    const chatId = "8319188377";
+    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}`;
+    try{
+        await fetch(url);
+    }catch(err){
+        console.error(err);
+        showToast("Failed to send Telegram message ❌", true);
+    }
+}
+
+/* Rating */
+const stars = document.querySelectorAll("#stars span");
+const ratingMsg = document.getElementById("rating-msg");
+const avgRatingEl = document.getElementById("average-rating");
+
+stars.forEach(star=>{
+  star.addEventListener("click", async ()=>{
+    const user = auth.currentUser;
+    if(!user){ showToast("Login first!"); return; }
+    const value = parseInt(star.dataset.value);
+
+    stars.forEach(s=>{
+      if(parseInt(s.dataset.value) <= value){
+        s.textContent = "★"; 
+        s.style.color = "#00ffcc";
+      } else {
+        s.textContent = "☆"; 
+        s.style.color = "";
+      }
+    });
+
+    try{
+      await db.collection("ratings").add({
+        user: user.uid,
+        rating: value,
+        timestamp: new Date()
+      });
+      showToast("Rating submitted ✅");
+      const msg = `⭐ New Rating from ${user.email}: ${value} / 5`;
+      await sendToTelegram(msg);
+      updateAverageRating();
+    }catch(e){
+      console.error(e);
+      showToast("Error submitting rating ❌");
+    }
+  });
+});
+
+function updateAverageRating(){
+  db.collection("ratings").get().then(snapshot=>{
+    let sum=0, count=0;
+    snapshot.forEach(doc=>{
+      sum += doc.data().rating;
+      count++;
+    });
+    if(count>0) avgRatingEl.textContent = "Average Rating: "+(sum/count).toFixed(1)+" / 5";
+    else avgRatingEl.textContent = "No ratings yet";
+  });
+}
+updateAverageRating();
+
+/* Feedback */
+const feedbackBtn = document.getElementById("submit-feedback");
+const feedbackInput = document.getElementById("feedback-input");
+
+feedbackBtn.addEventListener("click", async ()=>{
+  const text = feedbackInput.value.trim();
+  const user = auth.currentUser;
+  if(!user){ showToast("Login first!"); return; }
+  if(!text){ showToast("Write something!"); return; }
+
+  try{
+    await db.collection("feedback").add({
+        user: user.uid,
+        message: text,
+        timestamp: new Date()
+    });
+    showToast("Feedback submitted ✅");
+    feedbackInput.value = "";
+    const msg = `💬 New Feedback from ${user.email}:\n${text}`;
+    await sendToTelegram(msg);
+  }catch(e){
+    console.error(e);
+    showToast("Error submitting feedback ❌");
+  }
+});
+</script>
 
 </body>
 </html>

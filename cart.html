@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cart - Breakout</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+<style>
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:#fff;
+}
+#back-btn{
+    position:fixed;
+    bottom:20px;
+    right:50px;
+    padding:10px 20px;
+    border:none;
+    border-radius:25px;
+    background:linear-gradient(45deg,#00ffcc,#00d4ff);
+    font-weight:bold;
+    cursor:pointer;
+    z-index:1000;
+}
+#user-card{
+    position:fixed;
+    top:20px;
+    right:20px;
+    width:200px;
+    padding:15px;
+    backdrop-filter:blur(12px);
+    background:rgba(255,255,255,.12);
+    border-radius:15px;
+    box-shadow:0 8px 30px rgba(0,0,0,.45);
+    text-align:center;
+    z-index:1000;
+}
+#cart-container{
+    max-width:900px;
+    margin:120px auto;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+.cart-item{
+    background:rgba(255,255,255,0.1);
+    padding:15px;
+    border-radius:15px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.cart-item-info h5{
+    margin:0;
+    color:#00ffcc;
+}
+.remove-btn{
+    border:none;
+    border-radius:12px;
+    background:#ff4d4d;
+    color:#fff;
+    padding:6px 12px;
+    cursor:pointer;
+    align-self:flex-start;
+}
+.qty-input{
+    width:50px;
+    text-align:center;
+}
+#total-price{
+    font-size:1.2em;
+    font-weight:bold;
+    text-align:right;
+    color:#00ffcc;
+}
+#checkout-btn{
+    margin:20px auto;
+    padding:10px 30px;
+    border:none;
+    border-radius:25px;
+    background:linear-gradient(45deg,#00ffcc,#00d4ff);
+    font-weight:bold;
+    cursor:pointer;
+    display:block;
+}
+#receipt-box{
+    background:rgba(255,255,255,0.25);
+    padding:20px;
+    border-radius:20px;
+    text-align:center;
+    font-weight:bold;
+    margin-top:20px;
+}
+#toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    padding:12px 25px;
+    border-radius:25px;
+    font-weight:bold;
+    opacity:0;
+    transition:.4s;
+    z-index:2000;
+}
+#toast.show{opacity:1;}
+</style>
+</head>
+
+<body>
+
+<div id="toast"></div>
+<button id="back-btn">Back</button>
+
+<div id="user-card">
+    <h5 id="user-name">Loading...</h5>
+    <p id="user-points"></p>
+    <p id="user-balance"></p>
+</div>
+
+<div id="cart-container"></div>
+<p id="total-price"></p>
+<button id="checkout-btn">Checkout</button>
+<div id="receipt-box"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAubjKdiEqfDpW-tc94-l-AI7lbPs7IU04",
+  authDomain: "breakout-d5088.firebaseapp.com",
+  projectId: "breakout-d5088"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const cartContainer = document.getElementById("cart-container");
+const totalPriceEl = document.getElementById("total-price");
+const receiptBox = document.getElementById("receipt-box");
+const checkoutBtn = document.getElementById("checkout-btn");
+const toast = document.getElementById("toast");
+
+const userNameEl = document.getElementById("user-name");
+const userPointsEl = document.getElementById("user-points");
+const userBalanceEl = document.getElementById("user-balance");
+
+let userData;
+let currentUser;
+let sentTelegram = false; // لمنع إعادة الإرسال
+
+function showToast(msg,error=false){
+    toast.textContent = msg;
+    toast.style.background = error
+        ? "linear-gradient(45deg,#ff4d4d,#ff0000)"
+        : "linear-gradient(45deg,#00ffcc,#00d4ff)";
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"),2500);
+}
+
+function generateReceiptCode(){
+    return "RC-" + Math.floor(1000 + Math.random()*9000);
+}
+
+async function sendToTelegram(msg){
+    if(sentTelegram) return; // لو اتبعت قبل كده مايبعتش تاني
+    const token="8260462424:AAHnSEjh9OKxJ-BVHgZUkL7f-ZomyH--Rdo";
+    const chatId="8319188377";
+    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}`;
+    try{
+        await fetch(url);
+        sentTelegram = true;
+    }catch(err){
+        console.error(err);
+        showToast("Failed to send Telegram message", true);
+    }
+}
+
+async function renderCart(user){
+    currentUser = user;
+    const ref = doc(db,"users",user.uid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()) return;
+
+    userData = snap.data();
+
+    userNameEl.textContent = "User: " + userData.username;
+    userPointsEl.textContent = "Points: " + (userData.points || 0);
+    userBalanceEl.textContent = "Wallet: " + userData.wallet + " EGY";
+
+    const cart = userData.cart || [];
+    cartContainer.innerHTML="";
+    let total = 0;
+
+    cart.forEach((item,index)=>{
+        total += item.totalPrice;
+        const div = document.createElement("div");
+        div.className="cart-item";
+        div.innerHTML=`
+            <div class="cart-item-info">
+                <h5>${item.name}</h5>
+                <p>${item.flavor || ''}</p>
+                <p>Qty: <input type="number" min="1" value="${item.qty}" class="qty-input"></p>
+                <p>Total: ${item.totalPrice} EGY</p>
+                <p>${item.notes}</p>
+            </div>
+            <button class="remove-btn">Remove</button>
+        `;
+
+        const qtyInput = div.querySelector(".qty-input");
+        qtyInput.onchange = async ()=>{
+            let newQty = parseInt(qtyInput.value);
+            if(newQty < 1) newQty = 1;
+            item.totalPrice = (item.totalPrice / item.qty) * newQty;
+            item.qty = newQty;
+            await updateDoc(ref,{cart});
+            renderCart(user);
+        };
+
+        div.querySelector(".remove-btn").onclick = async ()=>{
+            const newCart = cart.filter((_,i)=>i!==index);
+            await updateDoc(ref,{cart:newCart});
+            showToast("Removed");
+            renderCart(user);
+        };
+
+        cartContainer.appendChild(div);
+    });
+
+    totalPriceEl.textContent="Total: "+total+" EGY";
+
+    checkoutBtn.onclick = async ()=>{
+        if(cart.length===0){
+            showToast("Cart empty",true);
+            return;
+        }
+
+        if(userData.wallet < total){
+            showToast("رصيدك غير كافي 💳❌",true);
+            return;
+        }
+
+        let earnedPoints = total;
+        let newPoints = (userData.points || 0) + earnedPoints;
+        let bonusEGY = Math.floor(newPoints / 2500) * 25;
+        let remainingPoints = newPoints % 2500;
+
+        const receiptCode = generateReceiptCode();
+        let receipt = `User: ${userData.username}\nReceipt: ${receiptCode}\n`;
+
+        cart.forEach(i=>{
+            receipt += `${i.name} (${i.flavor}) - Qty: ${i.qty} - ${i.totalPrice} EGY\n`;
+        });
+
+        receipt += `Total: ${total} EGY\n`;
+        receipt += `Points Earned: ${earnedPoints}\n`;
+        if(bonusEGY>0) receipt += `🎁 Bonus Wallet: +${bonusEGY} EGY\n`;
+
+        await sendToTelegram(receipt);
+
+        await updateDoc(ref,{
+            cart:[],
+            wallet: userData.wallet - total + bonusEGY,
+            points: remainingPoints
+        });
+
+        receiptBox.textContent = receipt;
+        showToast("Checkout successful 🎉");
+        renderCart(user);
+    };
+}
+
+document.getElementById("back-btn").onclick=()=>location.href="home.html";
+
+onAuthStateChanged(auth,user=>{
+    if(user) renderCart(user);
+    else location.href="login.html";
+});
+</script>
+</body>
+</html>
